@@ -57,26 +57,115 @@ export const exportToImage = async (invoiceElement: HTMLElement, invoice: Invoic
   }
 };
 
-export const shareInvoice = async (invoice: Invoice) => {
-  const shareData = {
-    title: `Invoice #${invoice.sNo} - ${invoice.customerName}`,
-    text: `Invoice for ${invoice.customerName} - Total: PKR ${invoice.total.toFixed(2)}`,
-    url: window.location.href
-  };
+export const shareInvoice = async (invoiceElement: HTMLElement, invoice: Invoice) => {
+  try {
+    // Generate image from invoice element
+    const canvas = await html2canvas(invoiceElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff'
+    });
 
-  if (navigator.share && navigator.canShare(shareData)) {
-    try {
-      await navigator.share(shareData);
-    } catch (error) {
-      console.error('Error sharing:', error);
-      fallbackShare(invoice);
+    // Convert canvas to blob
+    const blob = await new Promise<Blob>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+      }, 'image/png', 0.9);
+    });
+
+    // Create file from blob
+    const file = new File([blob], `invoice-${invoice.sNo}-${invoice.customerName}.png`, {
+      type: 'image/png'
+    });
+
+    // Prepare share data with image
+    const shareData = {
+      title: `Invoice #${invoice.sNo} - ${invoice.customerName}`,
+      text: `Invoice for ${invoice.customerName} - Total: PKR ${invoice.total.toFixed(2)}`,
+      files: [file]
+    };
+
+    // Check if Web Share API supports files
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        console.error('Error sharing with Web Share API:', error);
+        // Fall back to image download
+        await fallbackShareImage(canvas, invoice);
+        return;
+      }
     }
-  } else {
-    fallbackShare(invoice);
+
+    // Check if Web Share API exists but doesn't support files
+    if (navigator.share) {
+      try {
+        // Try sharing without files (text only)
+        const textShareData = {
+          title: `Invoice #${invoice.sNo} - ${invoice.customerName}`,
+          text: `Invoice for ${invoice.customerName} - Total: PKR ${invoice.total.toFixed(2)}`
+        };
+        
+        if (navigator.canShare && navigator.canShare(textShareData)) {
+          await navigator.share(textShareData);
+          // Also download the image
+          await fallbackShareImage(canvas, invoice);
+          return;
+        }
+      } catch (error) {
+        console.error('Error sharing text:', error);
+      }
+    }
+
+    // If Web Share API doesn't support files, fall back to image download
+    await fallbackShareImage(canvas, invoice);
+
+  } catch (error) {
+    console.error('Error generating image for sharing:', error);
+    // Fall back to text sharing
+    fallbackShareText(invoice);
   }
 };
 
-const fallbackShare = (invoice: Invoice) => {
+const fallbackShareImage = async (canvas: HTMLCanvasElement, invoice: Invoice) => {
+  // Try to copy image to clipboard first (modern browsers)
+  if (navigator.clipboard && window.ClipboardItem) {
+    try {
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, 'image/png', 0.9);
+      });
+      
+      const clipboardItem = new ClipboardItem({ 'image/png': blob });
+      await navigator.clipboard.write([clipboardItem]);
+      
+      alert('Invoice image copied to clipboard! You can now paste it in any app.');
+      return;
+    } catch (error) {
+      console.log('Clipboard copy failed, falling back to download:', error);
+    }
+  }
+  
+  // Download the image as fallback
+  const link = document.createElement('a');
+  link.download = `invoice-${invoice.sNo}-${invoice.customerName}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+  
+  // Show message to user with better instructions
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    alert('Invoice image downloaded! Check your downloads folder and share it through your preferred app (WhatsApp, Email, etc.).');
+  } else {
+    alert('Invoice image downloaded! You can now share it from your device.');
+  }
+};
+
+const fallbackShareText = (invoice: Invoice) => {
   const shareText = `Invoice #${invoice.sNo} for ${invoice.customerName} - Total: PKR ${invoice.total.toFixed(2)}`;
   
   if (navigator.clipboard) {

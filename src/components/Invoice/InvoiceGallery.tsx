@@ -56,7 +56,19 @@ export default function InvoiceGallery() {
   };
 
   const handleShare = async (invoice: Invoice) => {
-    await shareInvoice(invoice);
+    // Create a temporary element with the invoice HTML
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = generateInvoiceHTML(invoice);
+    tempElement.style.position = 'absolute';
+    tempElement.style.left = '-9999px';
+    tempElement.style.top = '-9999px';
+    document.body.appendChild(tempElement);
+    
+    try {
+      await shareInvoice(tempElement, invoice);
+    } finally {
+      document.body.removeChild(tempElement);
+    }
   };
 
   const generateInvoiceHTML = (invoice: Invoice) => {
