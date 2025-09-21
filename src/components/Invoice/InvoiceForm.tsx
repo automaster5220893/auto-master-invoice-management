@@ -50,26 +50,25 @@ export default function InvoiceForm() {
     });
   }, [watchedServices, setValue]);
 
-  const onSubmit = (data: InvoiceFormData) => {
-    const total = data.services.reduce((sum, service) => sum + (service.rate || 0), 0);
-    const nextSNo = (invoices.length + 1).toString().padStart(3, '0');
+  const onSubmit = async (data: InvoiceFormData) => {
+    const filteredServices = data.services.filter(service => service.description.trim() !== '');
     
-    const newInvoice = {
-      id: uuidv4(),
-      sNo: nextSNo,
-      customerName: data.customerName,
-      date: format(new Date(), 'dd/MM/yyyy'),
-      services: data.services.filter(service => service.description.trim() !== '').map(service => ({
-        ...service,
-        amount: service.rate || 0
-      })),
-      total,
-      createdAt: new Date()
-    };
+    if (filteredServices.length === 0) {
+      alert('Please add at least one service');
+      return;
+    }
 
-    addInvoice(newInvoice);
-    reset();
-    alert('Invoice created successfully!');
+    const success = await addInvoice({
+      customerName: data.customerName,
+      services: filteredServices
+    });
+
+    if (success) {
+      reset();
+      alert('Invoice created successfully!');
+    } else {
+      alert('Failed to create invoice. Please try again.');
+    }
   };
 
   const total = watchedServices.reduce((sum: number, service: Service) => sum + (service.rate || 0), 0);

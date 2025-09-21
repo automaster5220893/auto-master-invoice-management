@@ -20,7 +20,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { logout, workshopInfo } = useStore();
+  const { logout, workshopInfo, user } = useStore();
   const pathname = usePathname();
 
   const navigation = [
@@ -29,8 +29,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    // Redirect to login page after logout
+    window.location.href = '/';
   };
 
   return (
@@ -42,7 +44,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex h-16 items-center justify-between px-4 bg-red-600">
             <div className="flex items-center">
               <Car className="w-8 h-8 text-white mr-2" />
-              <span className="text-white font-bold text-lg">{workshopInfo.name}</span>
+              <span className="text-white font-bold text-lg">{workshopInfo?.name || 'AUTO MASTER'}</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -89,7 +91,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col flex-grow bg-white shadow-lg">
           <div className="flex h-16 items-center px-4 bg-red-600">
             <Car className="w-8 h-8 text-white mr-2" />
-            <span className="text-white font-bold text-lg">{workshopInfo.name}</span>
+            <span className="text-white font-bold text-lg">{workshopInfo?.name || 'AUTO MASTER'}</span>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-2">
             {navigation.map((item) => {
@@ -138,8 +140,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex flex-1"></div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
               <div className="text-sm font-medium text-gray-700">
-                Welcome, Admin
+                Welcome, {user?.username || 'User'}
               </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center px-3 py-1 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
+              >
+                <LogOut className="w-4 h-4 mr-1" />
+                Logout
+              </button>
             </div>
           </div>
         </div>

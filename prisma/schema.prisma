@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  invoices     Invoice[]
+  workshopInfo WorkshopInfo?
+
+  @@map("users")
+}
+
+model WorkshopInfo {
+  id           String   @id @default(cuid())
+  name         String
+  tagline      String
+  referenceNo  String
+  vendorNo     String
+  strn         String
+  contactPerson String
+  phone        String
+  email        String
+  address      String
+  facebook     String?
+  instagram    String?
+  services     String   // JSON string of services array
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("workshop_info")
+}
+
+model Invoice {
+  id           String   @id @default(cuid())
+  sNo          String
+  customerName String
+  date         String
+  total        Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services Service[]
+
+  @@map("invoices")
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  description String
+  rate        Float
+  amount      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("services")
+}

@@ -1,109 +1,231 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { Invoice, User, WorkshopInfo } from '@/types';
+import Cookies from 'js-cookie';
+import { clearAllStorage } from '@/utils/clearStorage';
 
 interface AppState {
   // Authentication
   user: User | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
+  token: string | null;
+  login: (username: string, password: string) => Promise<boolean>;
+  // register: (username: string, email: string, password: string) => Promise<boolean>; // Commented out - registration disabled
   logout: () => void;
+  checkAuth: () => void;
 
   // Invoices
   invoices: Invoice[];
-  addInvoice: (invoice: Invoice) => void;
-  updateInvoice: (id: string, invoice: Partial<Invoice>) => void;
-  deleteInvoice: (id: string) => void;
+  loading: boolean;
+  fetchInvoices: () => Promise<void>;
+  addInvoice: (invoiceData: { customerName: string; services: any[] }) => Promise<boolean>;
+  deleteInvoice: (id: string) => Promise<boolean>;
   getInvoice: (id: string) => Invoice | undefined;
 
   // Workshop Info
-  workshopInfo: WorkshopInfo;
-  updateWorkshopInfo: (info: Partial<WorkshopInfo>) => void;
+  workshopInfo: WorkshopInfo | null;
+  fetchWorkshopInfo: () => Promise<void>;
+  updateWorkshopInfo: (info: Partial<WorkshopInfo>) => Promise<boolean>;
 }
 
-const defaultWorkshopInfo: WorkshopInfo = {
-  name: "AUTO MASTER",
-  tagline: "MAINTENANCE CENTER",
-  referenceNo: "5220893",
-  vendorNo: "30305421",
-  strn: "327787615816",
-  contactPerson: "Latif Ur Rehman",
-  phone: "0312-9790076",
-  email: "latif2016@gmail.com",
-  address: "Opposite Suzuki Motors Ring Road Peshawar",
-  facebook: "accidentmaster",
-  instagram: "Accident Master",
-  services: ["Denting", "Painting", "Mechanic", "A.C", "Auto Electrician", "Computer Scanner"]
+const API_BASE = '/api';
+
+const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+  const token = Cookies.get('auth-token');
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API call failed: ${response.statusText}`);
+  }
+
+  return response.json();
 };
 
-export const useStore = create<AppState>()(
-  persist(
-    (set, get) => ({
-      // Authentication
-      user: null,
-      isAuthenticated: false,
+export const useStore = create<AppState>()((set, get) => ({
+  // Authentication
+  user: null,
+  isAuthenticated: false,
+  token: null,
 
-      login: (username: string, password: string) => {
-        // Simple authentication - in production, this would be more secure
-        if (username === "admin" && password === "admin123") {
-          const user: User = {
-            id: "1",
-            username,
-            email: "admin@automaster.com",
-            isAuthenticated: true
-          };
-          set({ user, isAuthenticated: true });
-          return true;
-        }
-        return false;
-      },
+  login: async (username: string, password: string) => {
+    try {
+      const response = await apiCall('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
 
-      logout: () => {
-        set({ user: null, isAuthenticated: false });
-      },
-
-      // Invoices
-      invoices: [],
-      addInvoice: (invoice: Invoice) => {
-        set((state) => ({
-          invoices: [...state.invoices, invoice]
-        }));
-      },
-
-      updateInvoice: (id: string, updatedInvoice: Partial<Invoice>) => {
-        set((state) => ({
-          invoices: state.invoices.map((invoice) =>
-            invoice.id === id ? { ...invoice, ...updatedInvoice } : invoice
-          )
-        }));
-      },
-
-      deleteInvoice: (id: string) => {
-        set((state) => ({
-          invoices: state.invoices.filter((invoice) => invoice.id !== id)
-        }));
-      },
-
-      getInvoice: (id: string) => {
-        return get().invoices.find((invoice) => invoice.id === id);
-      },
-
-      // Workshop Info
-      workshopInfo: defaultWorkshopInfo,
-      updateWorkshopInfo: (info: Partial<WorkshopInfo>) => {
-        set((state) => ({
-          workshopInfo: { ...state.workshopInfo, ...info }
-        }));
-      }
-    }),
-    {
-      name: 'auto-master-storage',
-      partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-        invoices: state.invoices,
-        workshopInfo: state.workshopInfo
-      })
+      const { token, user } = response;
+      Cookies.set('auth-token', token, { expires: 7 });
+      
+      set({ 
+        user: { ...user, isAuthenticated: true }, 
+        isAuthenticated: true, 
+        token 
+      });
+      
+      // Fetch user data
+      await get().fetchInvoices();
+      await get().fetchWorkshopInfo();
+      
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-  )
-);
+  },
+
+  // Registration function commented out - registration disabled
+  /*
+  register: async (username: string, email: string, password: string) => {
+    try {
+      const response = await apiCall('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const { token, user } = response;
+      Cookies.set('auth-token', token, { expires: 7 });
+      
+      set({ 
+        user: { ...user, isAuthenticated: true }, 
+        isAuthenticated: true, 
+        token 
+      });
+      
+      // Fetch user data
+      await get().fetchInvoices();
+      await get().fetchWorkshopInfo();
+      
+      return true;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
+    }
+  },
+  */
+
+  logout: async () => {
+    try {
+      // Call logout API to clear server-side session
+      await apiCall('/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.log('Logout API call failed:', error);
+    }
+    
+    // Clear all browser storage
+    await clearAllStorage();
+    
+    // Clear cookies using js-cookie as backup
+    Cookies.remove('auth-token');
+    Cookies.remove('auth-token', { path: '/' });
+    Cookies.remove('auth-token', { path: '/', domain: window.location.hostname });
+    
+    // Reset store state
+    set({ 
+      user: null, 
+      isAuthenticated: false, 
+      token: null,
+      invoices: [],
+      workshopInfo: null,
+      loading: false
+    });
+  },
+
+  checkAuth: () => {
+    const token = Cookies.get('auth-token');
+    if (token) {
+      set({ token, isAuthenticated: true });
+      // Fetch user data
+      get().fetchInvoices();
+      get().fetchWorkshopInfo();
+    }
+  },
+
+  // Invoices
+  invoices: [],
+  loading: false,
+
+  fetchInvoices: async () => {
+    try {
+      set({ loading: true });
+      const invoices = await apiCall('/invoices');
+      set({ invoices });
+    } catch (error) {
+      console.error('Fetch invoices error:', error);
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  addInvoice: async (invoiceData: { customerName: string; services: any[] }) => {
+    try {
+      const invoice = await apiCall('/invoices', {
+        method: 'POST',
+        body: JSON.stringify(invoiceData),
+      });
+      
+      set((state) => ({
+        invoices: [invoice, ...state.invoices]
+      }));
+      
+      return true;
+    } catch (error) {
+      console.error('Add invoice error:', error);
+      return false;
+    }
+  },
+
+  deleteInvoice: async (id: string) => {
+    try {
+      await apiCall(`/invoices/${id}`, {
+        method: 'DELETE',
+      });
+      
+      set((state) => ({
+        invoices: state.invoices.filter((invoice) => invoice.id !== id)
+      }));
+      
+      return true;
+    } catch (error) {
+      console.error('Delete invoice error:', error);
+      return false;
+    }
+  },
+
+  getInvoice: (id: string) => {
+    return get().invoices.find((invoice) => invoice.id === id);
+  },
+
+  // Workshop Info
+  workshopInfo: null,
+
+  fetchWorkshopInfo: async () => {
+    try {
+      const workshopInfo = await apiCall('/workshop');
+      set({ workshopInfo });
+    } catch (error) {
+      console.error('Fetch workshop info error:', error);
+    }
+  },
+
+  updateWorkshopInfo: async (info: Partial<WorkshopInfo>) => {
+    try {
+      const workshopInfo = await apiCall('/workshop', {
+        method: 'PUT',
+        body: JSON.stringify(info),
+      });
+      
+      set({ workshopInfo });
+      return true;
+    } catch (error) {
+      console.error('Update workshop info error:', error);
+      return false;
+    }
+  }
+}));

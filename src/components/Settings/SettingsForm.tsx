@@ -3,18 +3,32 @@
 import { useForm } from 'react-hook-form';
 import { useStore } from '@/store/useStore';
 import { WorkshopInfo } from '@/types';
-import { Save, Building, Phone, Mail, MapPin, Facebook, Instagram } from 'lucide-react';
+import { Save, Building, Phone, Mail, MapPin, Facebook, Instagram, Trash2 } from 'lucide-react';
+import { clearAllStorage } from '@/utils/clearStorage';
 
 export default function SettingsForm() {
-  const { workshopInfo, updateWorkshopInfo } = useStore();
+  const { workshopInfo, updateWorkshopInfo, logout } = useStore();
   
   const { register, handleSubmit, formState: { errors } } = useForm<WorkshopInfo>({
     defaultValues: workshopInfo
   });
 
-  const onSubmit = (data: WorkshopInfo) => {
-    updateWorkshopInfo(data);
-    alert('Settings updated successfully!');
+  const onSubmit = async (data: WorkshopInfo) => {
+    const success = await updateWorkshopInfo(data);
+    if (success) {
+      alert('Settings updated successfully!');
+    } else {
+      alert('Failed to update settings. Please try again.');
+    }
+  };
+
+  const handleClearAllData = async () => {
+    if (confirm('Are you sure you want to clear all data? This will log you out and remove all stored information. This action cannot be undone.')) {
+      await clearAllStorage();
+      await logout();
+      alert('All data cleared successfully. You have been logged out.');
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -184,8 +198,17 @@ export default function SettingsForm() {
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end">
+          {/* Action Buttons */}
+          <div className="flex justify-between items-center">
+            <button
+              type="button"
+              onClick={handleClearAllData}
+              className="flex items-center px-4 py-2 text-red-600 bg-red-50 font-medium rounded-lg hover:bg-red-100 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            >
+              <Trash2 className="w-5 h-5 mr-2" />
+              Clear All Data
+            </button>
+            
             <button
               type="submit"
               className="flex items-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"

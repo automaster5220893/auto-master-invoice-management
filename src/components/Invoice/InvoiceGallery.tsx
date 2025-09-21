@@ -61,6 +61,24 @@ export default function InvoiceGallery() {
 
   const generateInvoiceHTML = (invoice: Invoice) => {
     const { workshopInfo } = useStore.getState();
+    
+    // Default workshop info if not loaded yet
+    const defaultWorkshopInfo = {
+      name: "AUTO MASTER",
+      tagline: "MAINTENANCE CENTER",
+      referenceNo: "5220893",
+      vendorNo: "30305421",
+      strn: "327787615816",
+      contactPerson: "Latif Ur Rehman",
+      phone: "0312-9790076",
+      email: "latif2016@gmail.com",
+      address: "Opposite Suzuki Motors Ring Road Peshawar",
+      facebook: "accidentmaster",
+      instagram: "Accident Master",
+      services: ["Denting", "Painting", "Mechanic", "A.C", "Auto Electrician", "Computer Scanner"]
+    };
+    
+    const currentWorkshopInfo = workshopInfo || defaultWorkshopInfo;
     return `
       <div style="width: 800px; background: white; font-family: Arial, sans-serif;">
         <div style="background: #dc2626; color: white; padding: 20px;">
@@ -68,18 +86,18 @@ export default function InvoiceGallery() {
             <div style="display: flex; align-items: center;">
               <div style="margin-right: 15px;">🚗</div>
               <div>
-                <h1 style="font-size: 24px; font-weight: bold; margin: 0;">${workshopInfo.name}</h1>
-                <p style="font-size: 14px; opacity: 0.9; margin: 0;">-${workshopInfo.tagline}-</p>
+                <h1 style="font-size: 24px; font-weight: bold; margin: 0;">${currentWorkshopInfo.name}</h1>
+                <p style="font-size: 14px; opacity: 0.9; margin: 0;">-${currentWorkshopInfo.tagline}-</p>
               </div>
             </div>
             <div style="text-align: right; font-size: 12px;">
-              <p style="margin: 0;">Reference No: ${workshopInfo.referenceNo}</p>
-              <p style="margin: 0;">Vendor No: ${workshopInfo.vendorNo}</p>
-              <p style="margin: 0;">STRN: ${workshopInfo.strn}</p>
+              <p style="margin: 0;">Reference No: ${currentWorkshopInfo.referenceNo}</p>
+              <p style="margin: 0;">Vendor No: ${currentWorkshopInfo.vendorNo}</p>
+              <p style="margin: 0;">STRN: ${currentWorkshopInfo.strn}</p>
             </div>
           </div>
           <div style="font-size: 12px;">
-            <p style="margin: 0;">Services: ${workshopInfo.services.join(' | ')}</p>
+            <p style="margin: 0;">Services: ${currentWorkshopInfo.services.join(' | ')}</p>
           </div>
         </div>
         
@@ -124,28 +142,28 @@ export default function InvoiceGallery() {
         
         <div style="background: #dc2626; color: white; padding: 20px;">
           <div style="text-align: center; margin-bottom: 15px;">
-            <h3 style="font-weight: bold; font-size: 18px; margin: 0;">${workshopInfo.name}</h3>
+            <h3 style="font-weight: bold; font-size: 18px; margin: 0;">${currentWorkshopInfo.name}</h3>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
             <div style="display: flex; align-items: center;">
               <span style="margin-right: 8px;">📞</span>
-              <span>${workshopInfo.contactPerson} ${workshopInfo.phone}</span>
+              <span>${currentWorkshopInfo.contactPerson} ${currentWorkshopInfo.phone}</span>
             </div>
             <div style="display: flex; align-items: center;">
               <span style="margin-right: 8px;">✉️</span>
-              <span>${workshopInfo.email}</span>
+              <span>${currentWorkshopInfo.email}</span>
             </div>
             <div style="display: flex; align-items: center; grid-column: 1 / -1;">
               <span style="margin-right: 8px;">📍</span>
-              <span>${workshopInfo.address}</span>
+              <span>${currentWorkshopInfo.address}</span>
             </div>
             <div style="display: flex; align-items: center;">
               <span style="margin-right: 8px;">📘</span>
-              <span>${workshopInfo.facebook}</span>
+              <span>${currentWorkshopInfo.facebook}</span>
             </div>
             <div style="display: flex; align-items: center;">
               <span style="margin-right: 8px;">📷</span>
-              <span>${workshopInfo.instagram}</span>
+              <span>${currentWorkshopInfo.instagram}</span>
             </div>
           </div>
         </div>

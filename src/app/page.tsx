@@ -6,8 +6,12 @@ import { useStore } from '@/store/useStore';
 import LoginForm from '@/components/Auth/LoginForm';
 
 export default function Home() {
-  const { isAuthenticated } = useStore();
+  const { isAuthenticated, checkAuth } = useStore();
   const router = useRouter();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
     if (isAuthenticated) {

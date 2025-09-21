@@ -25,6 +25,24 @@ interface InvoiceModalProps {
 
 export default function InvoiceModal({ invoice, onClose, onExportPDF, onShare }: InvoiceModalProps) {
   const { workshopInfo } = useStore();
+  
+  // Default workshop info if not loaded yet
+  const defaultWorkshopInfo = {
+    name: "AUTO MASTER",
+    tagline: "MAINTENANCE CENTER",
+    referenceNo: "5220893",
+    vendorNo: "30305421",
+    strn: "327787615816",
+    contactPerson: "Latif Ur Rehman",
+    phone: "0312-9790076",
+    email: "latif2016@gmail.com",
+    address: "Opposite Suzuki Motors Ring Road Peshawar",
+    facebook: "accidentmaster",
+    instagram: "Accident Master",
+    services: ["Denting", "Painting", "Mechanic", "A.C", "Auto Electrician", "Computer Scanner"]
+  };
+  
+  const currentWorkshopInfo = workshopInfo || defaultWorkshopInfo;
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -68,22 +86,22 @@ export default function InvoiceModal({ invoice, onClose, onExportPDF, onShare }:
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
                     <Car className="w-8 h-8 mr-3" />
-                    <div>
-                      <h1 className="text-2xl font-bold">{workshopInfo.name}</h1>
-                      <p className="text-sm opacity-90">-{workshopInfo.tagline}-</p>
-                    </div>
-                  </div>
-                  <div className="text-right text-sm">
-                    <p>Reference No: {workshopInfo.referenceNo}</p>
-                    <p>Vendor No: {workshopInfo.vendorNo}</p>
-                    <p>STRN: {workshopInfo.strn}</p>
-                  </div>
-                </div>
+            <div>
+              <h1 className="text-2xl font-bold">{currentWorkshopInfo.name}</h1>
+              <p className="text-sm opacity-90">-{currentWorkshopInfo.tagline}-</p>
+            </div>
+          </div>
+          <div className="text-right text-sm">
+            <p>Reference No: {currentWorkshopInfo.referenceNo}</p>
+            <p>Vendor No: {currentWorkshopInfo.vendorNo}</p>
+            <p>STRN: {currentWorkshopInfo.strn}</p>
+          </div>
+        </div>
 
-                {/* Services */}
-                <div className="text-sm">
-                  <p>Services: {workshopInfo.services.join(' | ')}</p>
-                </div>
+        {/* Services */}
+        <div className="text-sm">
+          <p>Services: {currentWorkshopInfo.services.join(' | ')}</p>
+        </div>
               </div>
 
               {/* Customer Info */}
@@ -132,31 +150,31 @@ export default function InvoiceModal({ invoice, onClose, onExportPDF, onShare }:
 
               {/* Footer */}
               <div className="bg-red-600 text-white p-4">
-                <div className="text-center mb-3">
-                  <h3 className="font-bold text-lg">{workshopInfo.name}</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2" />
-                    <span>{workshopInfo.contactPerson} {workshopInfo.phone}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Mail className="w-4 h-4 mr-2" />
-                    <span>{workshopInfo.email}</span>
-                  </div>
-                  <div className="flex items-center md:col-span-2">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    <span>{workshopInfo.address}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Facebook className="w-4 h-4 mr-2" />
-                    <span>{workshopInfo.facebook}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Instagram className="w-4 h-4 mr-2" />
-                    <span>{workshopInfo.instagram}</span>
-                  </div>
-                </div>
+        <div className="text-center mb-3">
+          <h3 className="font-bold text-lg">{currentWorkshopInfo.name}</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center">
+            <Phone className="w-4 h-4 mr-2" />
+            <span>{currentWorkshopInfo.contactPerson} {currentWorkshopInfo.phone}</span>
+          </div>
+          <div className="flex items-center">
+            <Mail className="w-4 h-4 mr-2" />
+            <span>{currentWorkshopInfo.email}</span>
+          </div>
+          <div className="flex items-center md:col-span-2">
+            <MapPin className="w-4 h-4 mr-2" />
+            <span>{currentWorkshopInfo.address}</span>
+          </div>
+          <div className="flex items-center">
+            <Facebook className="w-4 h-4 mr-2" />
+            <span>{currentWorkshopInfo.facebook}</span>
+          </div>
+          <div className="flex items-center">
+            <Instagram className="w-4 h-4 mr-2" />
+            <span>{currentWorkshopInfo.instagram}</span>
+          </div>
+        </div>
               </div>
             </div>
           </div>
