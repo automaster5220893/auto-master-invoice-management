@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Invoice, User, WorkshopInfo } from '@/types';
+import { Invoice, User, WorkshopInfo, Service } from '@/types';
 import Cookies from 'js-cookie';
 import { clearAllStorage } from '@/utils/clearStorage';
 
@@ -11,13 +11,13 @@ interface AppState {
   login: (username: string, password: string) => Promise<boolean>;
   // register: (username: string, email: string, password: string) => Promise<boolean>; // Commented out - registration disabled
   logout: () => void;
-  checkAuth: () => void;
+  checkAuth: () => Promise<void>;
 
   // Invoices
   invoices: Invoice[];
   loading: boolean;
   fetchInvoices: () => Promise<void>;
-  addInvoice: (invoiceData: { customerName: string; services: any[] }) => Promise<boolean>;
+  addInvoice: (invoiceData: { customerName: string; services: Service[] }) => Promise<boolean>;
   deleteInvoice: (id: string) => Promise<boolean>;
   getInvoice: (id: string) => Invoice | undefined;
 
@@ -41,7 +41,25 @@ const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   });
 
   if (!response.ok) {
-    throw new Error(`API call failed: ${response.statusText}`);
+    // Handle 401 Unauthorized - token expired
+    if (response.status === 401) {
+      // Clear authentication state
+      Cookies.remove('auth-token');
+      Cookies.remove('auth-token', { path: '/' });
+      Cookies.remove('auth-token', { path: '/', domain: window.location.hostname });
+      
+      // Reset store state
+      useStore.getState().logout();
+      
+      // Redirect to login page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+      
+      throw new Error('Authentication expired. Please login again.');
+    }
+    
+    throw new Error(`API call failed: ${response.status} ${response.statusText}`);
   }
 
   return response.json();
@@ -137,13 +155,32 @@ export const useStore = create<AppState>()((set, get) => ({
     });
   },
 
-  checkAuth: () => {
+  checkAuth: async () => {
     const token = Cookies.get('auth-token');
+    console.log('checkAuth called, token exists:', !!token);
+    
     if (token) {
       set({ token, isAuthenticated: true });
-      // Fetch user data
-      get().fetchInvoices();
-      get().fetchWorkshopInfo();
+      // Fetch user data - these will handle their own errors
+      try {
+        console.log('Fetching invoices and workshop info...');
+        await get().fetchInvoices();
+        await get().fetchWorkshopInfo();
+        console.log('Data fetch completed successfully');
+      } catch (error) {
+        // If fetching data fails due to auth issues, the apiCall function will handle logout
+        console.log('Auth check failed, user will be logged out automatically:', error);
+      }
+    } else {
+      // No token, ensure user is logged out
+      console.log('No token found, clearing auth state');
+      set({ 
+        user: null, 
+        isAuthenticated: false, 
+        token: null,
+        invoices: [],
+        workshopInfo: null
+      });
     }
   },
 
@@ -153,17 +190,26 @@ export const useStore = create<AppState>()((set, get) => ({
 
   fetchInvoices: async () => {
     try {
+      console.log('fetchInvoices called');
       set({ loading: true });
       const invoices = await apiCall('/invoices');
+      console.log('Invoices fetched successfully:', invoices.length, 'invoices');
       set({ invoices });
     } catch (error) {
       console.error('Fetch invoices error:', error);
+      // If it's an authentication error, the apiCall function will handle logout
+      // For other errors, show user-friendly message
+      if (error instanceof Error && !error.message.includes('Authentication expired')) {
+        alert('Failed to load invoices. Please try again.');
+      }
+      // Clear invoices on error to prevent showing stale data
+      set({ invoices: [] });
     } finally {
       set({ loading: false });
     }
   },
 
-  addInvoice: async (invoiceData: { customerName: string; services: any[] }) => {
+  addInvoice: async (invoiceData: { customerName: string; services: Service[] }) => {
     try {
       const invoice = await apiCall('/invoices', {
         method: 'POST',
@@ -211,6 +257,11 @@ export const useStore = create<AppState>()((set, get) => ({
       set({ workshopInfo });
     } catch (error) {
       console.error('Fetch workshop info error:', error);
+      // If it's an authentication error, the apiCall function will handle logout
+      // For other errors, show user-friendly message
+      if (error instanceof Error && !error.message.includes('Authentication expired')) {
+        alert('Failed to load workshop information. Please try again.');
+      }
     }
   },
 

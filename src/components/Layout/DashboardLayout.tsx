@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { 
   History, 
@@ -19,8 +19,42 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { logout, workshopInfo, user } = useStore();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { logout, workshopInfo, user, checkAuth, isAuthenticated } = useStore();
   const pathname = usePathname();
+
+  // Check authentication on mount
+  useEffect(() => {
+    const performAuthCheck = async () => {
+      setIsCheckingAuth(true);
+      try {
+        await checkAuth();
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    performAuthCheck();
+  }, [checkAuth]);
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Wait, it&apos;s loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
+    return null;
+  }
 
   const navigation = [
     { name: 'Create Invoice', href: '/dashboard', icon: Plus },

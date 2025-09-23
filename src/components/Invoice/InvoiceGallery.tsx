@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import { Invoice } from '@/types';
-import { format } from 'date-fns';
 import { exportToPDF, shareInvoice } from '@/utils/exportUtils';
 import { 
   Eye, 
@@ -13,15 +12,23 @@ import {
   Search,
   Calendar,
   User,
-  DollarSign
+  DollarSign,
+  RefreshCw
 } from 'lucide-react';
 import InvoiceModal from './InvoiceModal';
 
 export default function InvoiceGallery() {
-  const { invoices, deleteInvoice } = useStore();
+  const { invoices, deleteInvoice, fetchInvoices, loading } = useStore();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+
+  // Ensure invoices are fetched when component mounts
+  useEffect(() => {
+    if (invoices.length === 0 && !loading) {
+      fetchInvoices();
+    }
+  }, [invoices.length, loading, fetchInvoices]);
 
   const filteredInvoices = invoices.filter(invoice =>
     invoice.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -197,8 +204,18 @@ export default function InvoiceGallery() {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Invoice Gallery</h1>
-          <div className="text-sm text-gray-600">
-            Total Invoices: {invoices.length}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => fetchInvoices()}
+              disabled={loading}
+              className="flex items-center px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <div className="text-sm text-gray-600">
+              Total Invoices: {invoices.length}
+            </div>
           </div>
         </div>
 
@@ -216,8 +233,16 @@ export default function InvoiceGallery() {
           </div>
         </div>
 
-        {/* Invoices Grid */}
-        {filteredInvoices.length === 0 ? (
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <div className="w-16 h-16 mx-auto border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Loading invoices...</h3>
+            <p className="text-gray-600">Please wait while we fetch your invoices</p>
+          </div>
+        ) : filteredInvoices.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <Calendar className="w-16 h-16 mx-auto" />

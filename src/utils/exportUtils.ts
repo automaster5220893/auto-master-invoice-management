@@ -110,8 +110,8 @@ export const shareInvoice = async (invoiceElement: HTMLElement, invoice: Invoice
         
         if (navigator.canShare && navigator.canShare(textShareData)) {
           await navigator.share(textShareData);
-          // Also download the image
-          await fallbackShareImage(canvas, invoice);
+          // Only copy to clipboard, don't download
+          await copyImageToClipboard(canvas);
           return;
         }
       } catch (error) {
@@ -129,8 +129,8 @@ export const shareInvoice = async (invoiceElement: HTMLElement, invoice: Invoice
   }
 };
 
-const fallbackShareImage = async (canvas: HTMLCanvasElement, invoice: Invoice) => {
-  // Try to copy image to clipboard first (modern browsers)
+const copyImageToClipboard = async (canvas: HTMLCanvasElement) => {
+  // Try to copy image to clipboard (modern browsers)
   if (navigator.clipboard && window.ClipboardItem) {
     try {
       const blob = await new Promise<Blob>((resolve) => {
@@ -143,10 +143,20 @@ const fallbackShareImage = async (canvas: HTMLCanvasElement, invoice: Invoice) =
       await navigator.clipboard.write([clipboardItem]);
       
       alert('Invoice image copied to clipboard! You can now paste it in any app.');
-      return;
+      return true;
     } catch (error) {
-      console.log('Clipboard copy failed, falling back to download:', error);
+      console.log('Clipboard copy failed:', error);
+      return false;
     }
+  }
+  return false;
+};
+
+const fallbackShareImage = async (canvas: HTMLCanvasElement, invoice: Invoice) => {
+  // Try to copy image to clipboard first (modern browsers)
+  const copied = await copyImageToClipboard(canvas);
+  if (copied) {
+    return;
   }
   
   // Download the image as fallback
