@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { 
-  Car, 
   History, 
   LogOut, 
   Menu, 
@@ -43,7 +42,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl">
           <div className="flex h-16 items-center justify-between px-4 bg-red-600">
             <div className="flex items-center">
-              <Car className="w-8 h-8 text-white mr-2" />
+              <img 
+                src="/images/invoice_header_logo.png" 
+                alt="AUTO MASTER Logo" 
+                className="h-8 w-auto mr-2"
+              />
               <span className="text-white font-bold text-lg">{workshopInfo?.name || 'AUTO MASTER'}</span>
             </div>
             <button
@@ -90,7 +93,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white shadow-lg">
           <div className="flex h-16 items-center px-4 bg-red-600">
-            <Car className="w-8 h-8 text-white mr-2" />
+            <img 
+              src="/images/invoice_header_logo.png" 
+              alt="AUTO MASTER Logo" 
+              className="h-8 w-auto mr-2"
+            />
             <span className="text-white font-bold text-lg">{workshopInfo?.name || 'AUTO MASTER'}</span>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-2">

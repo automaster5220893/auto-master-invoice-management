@@ -8,7 +8,6 @@ import {
   X, 
   Download, 
   Share2, 
-  Car, 
   Phone, 
   Mail, 
   MapPin, 
@@ -81,27 +80,22 @@ export default function InvoiceModal({ invoice, onClose, onExportPDF, onShare }:
           {/* Invoice Content */}
           <div className="p-6" ref={invoiceRef}>
             <div className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-red-600 text-white p-4">
+              <div className="text-white p-4" style={{ backgroundColor: '#e52b28' }}>
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <Car className="w-8 h-8 mr-3" />
-            <div>
-              <h1 className="text-2xl font-bold">{currentWorkshopInfo.name}</h1>
-              <p className="text-sm opacity-90">-{currentWorkshopInfo.tagline}-</p>
-            </div>
-          </div>
-          <div className="text-right text-sm">
-            <p>Reference No: {currentWorkshopInfo.referenceNo}</p>
-            <p>Vendor No: {currentWorkshopInfo.vendorNo}</p>
-            <p>STRN: {currentWorkshopInfo.strn}</p>
-          </div>
-        </div>
-
-        {/* Services */}
-        <div className="text-sm">
-          <p>Services: {currentWorkshopInfo.services.join(' | ')}</p>
-        </div>
+                    <img 
+                      src="/images/invoice_header_logo.png" 
+                      alt="AUTO MASTER Logo" 
+                      className="h-20 w-auto"
+                    />
+                  </div>
+                  <div className="text-right text-sm">
+                    <p>Reference No: {currentWorkshopInfo.referenceNo}</p>
+                    <p>Vendor No: {currentWorkshopInfo.vendorNo}</p>
+                    <p>STRN: {currentWorkshopInfo.strn}</p>
+                  </div>
+                </div>
               </div>
 
               {/* Customer Info */}

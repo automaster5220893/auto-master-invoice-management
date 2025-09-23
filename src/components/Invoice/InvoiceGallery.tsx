@@ -93,23 +93,16 @@ export default function InvoiceGallery() {
     const currentWorkshopInfo = workshopInfo || defaultWorkshopInfo;
     return `
       <div style="width: 800px; background: white; font-family: Arial, sans-serif;">
-        <div style="background: #dc2626; color: white; padding: 20px;">
+        <div style="background: #e52b28; color: white; padding: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div style="display: flex; align-items: center;">
-              <div style="margin-right: 15px;">🚗</div>
-              <div>
-                <h1 style="font-size: 24px; font-weight: bold; margin: 0;">${currentWorkshopInfo.name}</h1>
-                <p style="font-size: 14px; opacity: 0.9; margin: 0;">-${currentWorkshopInfo.tagline}-</p>
-              </div>
+              <img src="/images/invoice_header_logo.png" alt="AUTO MASTER Logo" style="height: 80px; width: auto;" />
             </div>
             <div style="text-align: right; font-size: 12px;">
               <p style="margin: 0;">Reference No: ${currentWorkshopInfo.referenceNo}</p>
               <p style="margin: 0;">Vendor No: ${currentWorkshopInfo.vendorNo}</p>
               <p style="margin: 0;">STRN: ${currentWorkshopInfo.strn}</p>
             </div>
-          </div>
-          <div style="font-size: 12px;">
-            <p style="margin: 0;">Services: ${currentWorkshopInfo.services.join(' | ')}</p>
           </div>
         </div>
         
@@ -127,10 +120,10 @@ export default function InvoiceGallery() {
         
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr style="background: #dc2626; color: white;">
-              <th style="padding: 10px; text-align: left; border: 1px solid #dc2626;">DESCRIPTION</th>
-              <th style="padding: 10px; text-align: center; border: 1px solid #dc2626;">RATE</th>
-              <th style="padding: 10px; text-align: center; border: 1px solid #dc2626;">AMOUNT</th>
+             <tr style="background: #e52b28; color: white;">
+               <th style="padding: 10px; text-align: left; border: 1px solid #e52b28;">DESCRIPTION</th>
+               <th style="padding: 10px; text-align: center; border: 1px solid #e52b28;">RATE</th>
+               <th style="padding: 10px; text-align: center; border: 1px solid #e52b28;">AMOUNT</th>
             </tr>
           </thead>
           <tbody>
@@ -152,32 +145,48 @@ export default function InvoiceGallery() {
           </div>
         </div>
         
-        <div style="background: #dc2626; color: white; padding: 20px;">
+        <div style="background: #e52b28; color: white; padding: 20px;">
           <div style="text-align: center; margin-bottom: 15px;">
             <h3 style="font-weight: bold; font-size: 18px; margin: 0;">${currentWorkshopInfo.name}</h3>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
-            <div style="display: flex; align-items: center;">
-              <span style="margin-right: 8px;">📞</span>
-              <span>${currentWorkshopInfo.contactPerson} ${currentWorkshopInfo.phone}</span>
-            </div>
-            <div style="display: flex; align-items: center;">
-              <span style="margin-right: 8px;">✉️</span>
-              <span>${currentWorkshopInfo.email}</span>
-            </div>
-            <div style="display: flex; align-items: center; grid-column: 1 / -1;">
-              <span style="margin-right: 8px;">📍</span>
-              <span>${currentWorkshopInfo.address}</span>
-            </div>
-            <div style="display: flex; align-items: center;">
-              <span style="margin-right: 8px;">📘</span>
-              <span>${currentWorkshopInfo.facebook}</span>
-            </div>
-            <div style="display: flex; align-items: center;">
-              <span style="margin-right: 8px;">📷</span>
-              <span>${currentWorkshopInfo.instagram}</span>
-            </div>
-          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <tr>
+              <td style="width: 50%; padding: 4px 5px 4px 0;">
+                <div style="display: flex; align-items: center; line-height: 16px;">
+                  <img src="/images/telephone.png" alt="Phone" style="width: 12px; height: 12px; margin-right: 8px; flex-shrink: 0;" />
+                  <span style="margin-bottom: 12px;">${currentWorkshopInfo.contactPerson} ${currentWorkshopInfo.phone}</span>
+                </div>
+              </td>
+              <td style="width: 50%; padding: 4px 0 4px 5px;">
+                <div style="display: flex; align-items: center; line-height: 16px;">
+                  <img src="/images/email.png" alt="Email" style="width: 12px; height: 12px; margin-right: 8px; flex-shrink: 0;" />
+                  <span style="margin-bottom: 12px;">${currentWorkshopInfo.email}</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding: 4px 0;">
+                <div style="display: flex; align-items: center; line-height: 16px;">
+                  <img src="/images/pin.png" alt="Location" style="width: 12px; height: 12px; margin-right: 8px; flex-shrink: 0;" />
+                  <span style="margin-bottom: 12px;">${currentWorkshopInfo.address}</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 50%; padding: 4px 5px 4px 0;">
+                <div style="display: flex; align-items: center; line-height: 16px;">
+                  <img src="/images/facebook-app-symbol.png" alt="Facebook" style="width: 12px; height: 12px; margin-right: 8px; flex-shrink: 0;" />
+                  <span style="margin-bottom: 12px;">${currentWorkshopInfo.facebook}</span>
+                </div>
+              </td>
+              <td style="width: 50%; padding: 4px 0 4px 5px;">
+                <div style="display: flex; align-items: center; line-height: 16px;">
+                  <img src="/images/instagram.png" alt="Instagram" style="width: 12px; height: 12px; margin-right: 8px; flex-shrink: 0;" />
+                  <span style="margin-bottom: 12px;">${currentWorkshopInfo.instagram}</span>
+                </div>
+              </td>
+            </tr>
+          </table>
         </div>
       </div>
     `;

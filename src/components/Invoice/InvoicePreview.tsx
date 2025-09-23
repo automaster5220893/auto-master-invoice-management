@@ -2,7 +2,7 @@
 
 import { useStore } from '@/store/useStore';
 import { Service } from '@/types';
-import { Car, Phone, Mail, MapPin, Facebook, Instagram } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, Instagram } from 'lucide-react';
 
 interface InvoicePreviewProps {
   customerName: string;
@@ -33,27 +33,22 @@ export default function InvoicePreview({ customerName, services, total }: Invoic
 
   return (
     <div className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-red-600 text-white p-4">
+      <div className="text-white p-4" style={{ backgroundColor: '#e52b28' }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <Car className="w-8 h-8 mr-3" />
-            <div>
-              <h1 className="text-2xl font-bold">{currentWorkshopInfo.name}</h1>
-              <p className="text-sm opacity-90">-{currentWorkshopInfo.tagline}-</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <img 
+                src="/images/invoice_header_logo.png" 
+                alt="AUTO MASTER Logo" 
+                className="h-20 w-auto"
+              />
+            </div>
+            <div className="text-right text-sm">
+              <p>Reference No: {currentWorkshopInfo.referenceNo}</p>
+              <p>Vendor No: {currentWorkshopInfo.vendorNo}</p>
+              <p>STRN: {currentWorkshopInfo.strn}</p>
             </div>
           </div>
-          <div className="text-right text-sm">
-            <p>Reference No: {currentWorkshopInfo.referenceNo}</p>
-            <p>Vendor No: {currentWorkshopInfo.vendorNo}</p>
-            <p>STRN: {currentWorkshopInfo.strn}</p>
-          </div>
-        </div>
-
-        {/* Services */}
-        <div className="text-sm">
-          <p>Services: {currentWorkshopInfo.services.join(' | ')}</p>
-        </div>
       </div>
 
       {/* Customer Info */}
