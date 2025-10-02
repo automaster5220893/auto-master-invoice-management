@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import InstallPrompt from '@/components/PWA/InstallPrompt';
+import OfflineIndicator from '@/components/PWA/OfflineIndicator';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -70,6 +72,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Offline Indicator */}
+      <OfflineIndicator />
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
@@ -201,6 +205,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </main>
       </div>
+      
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
     </div>
   );
 }
