@@ -124,43 +124,50 @@ export default function InvoiceForm() {
 
                 <div className="space-y-3">
                   {fields.map((field: any, index: number) => (
-                    <div key={field.id} className="flex gap-2 items-end">
-                      <div className="flex-1">
+                    <div key={field.id} className="space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-end">
+                      {/* Description field - full width on mobile, flex-1 on larger screens */}
+                      <div className="w-full sm:flex-1">
                         <input
                           {...register(`services.${index}.description` as const, { required: true })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                           placeholder="Service description or part name"
                         />
                       </div>
-                      <div className="w-24">
-                        <input
-                          {...register(`services.${index}.rate` as const, { 
-                            required: true,
-                            valueAsNumber: true
-                          })}
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                          placeholder="Rate"
-                        />
+                      
+                      {/* Rate and Amount fields - side by side on mobile, separate on larger screens */}
+                      <div className="flex gap-2 sm:gap-2">
+                        <div className="flex-1 sm:w-20">
+                          <label className="block text-xs text-gray-500 mb-1 sm:hidden">Rate</label>
+                          <input
+                            {...register(`services.${index}.rate` as const, { 
+                              required: true,
+                              valueAsNumber: true
+                            })}
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                            placeholder="Rate"
+                          />
+                        </div>
+                        <div className="flex-1 sm:w-20">
+                          <label className="block text-xs text-gray-500 mb-1 sm:hidden">Amount</label>
+                          <input
+                            value={watchedServices[index]?.rate || 0}
+                            readOnly
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900"
+                            placeholder="Amount"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeService(index)}
+                          disabled={fields.length === 1}
+                          className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
-                      <div className="w-24">
-                        <input
-                          value={watchedServices[index]?.rate || 0}
-                          readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900"
-                          placeholder="Amount"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeService(index)}
-                        disabled={fields.length === 1}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </div>
                   ))}
                 </div>
