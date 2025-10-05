@@ -3,8 +3,9 @@
 import { useForm } from 'react-hook-form';
 import { useStore } from '@/store/useStore';
 import { WorkshopInfo } from '@/types';
-import { Save, Building, Phone, Mail, MapPin, Facebook, Instagram, Trash2 } from 'lucide-react';
+import { Save, Building, Phone, Mail, MapPin, Facebook, Instagram, Trash2, RefreshCw } from 'lucide-react';
 import { clearAllStorage } from '@/utils/clearStorage';
+import { clearAllCaches, clearApiCache, forceRefresh } from '@/utils/clearCache';
 
 export default function SettingsForm() {
   const { workshopInfo, updateWorkshopInfo, logout } = useStore();
@@ -28,6 +29,24 @@ export default function SettingsForm() {
       await logout();
       alert('All data cleared successfully. You have been logged out.');
       window.location.href = '/';
+    }
+  };
+
+  const handleClearCache = async () => {
+    if (confirm('Clear all cached data? This will force fresh data to be loaded from the server.')) {
+      const success = await clearApiCache();
+      if (success) {
+        alert('Cache cleared successfully! The app will now load fresh data.');
+        window.location.reload();
+      } else {
+        alert('Failed to clear cache. Please try again.');
+      }
+    }
+  };
+
+  const handleForceRefresh = () => {
+    if (confirm('Force refresh the app? This will clear all caches and reload the page.')) {
+      forceRefresh();
     }
   };
 
@@ -195,6 +214,32 @@ export default function SettingsForm() {
               <p className="text-sm text-gray-600 mt-1">
                 Enter services separated by commas
               </p>
+            </div>
+          </div>
+
+          {/* Cache Management */}
+          <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Cache Management</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              If you're experiencing issues with data not updating (like new invoices not appearing), try these options:
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={handleClearCache}
+                className="flex items-center px-4 py-2 text-blue-600 bg-blue-50 font-medium rounded-lg hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Clear API Cache
+              </button>
+              <button
+                type="button"
+                onClick={handleForceRefresh}
+                className="flex items-center px-4 py-2 text-orange-600 bg-orange-50 font-medium rounded-lg hover:bg-orange-100 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Force Refresh
+              </button>
             </div>
           </div>
 

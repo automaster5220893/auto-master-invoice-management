@@ -22,13 +22,20 @@ export default function InvoiceGallery() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
-  // Ensure invoices are fetched when component mounts
+  // Always fetch fresh invoices when component mounts or when navigating to gallery
   useEffect(() => {
-    if (invoices.length === 0 && !loading) {
+    const now = Date.now();
+    // Force refresh if it's been more than 30 seconds since last fetch
+    if (now - lastFetchTime > 30000) {
+      console.log('InvoiceGallery mounted, fetching fresh invoices...');
       fetchInvoices();
+      setLastFetchTime(now);
+    } else {
+      console.log('InvoiceGallery mounted, using cached invoices');
     }
-  }, [invoices.length, loading, fetchInvoices]);
+  }, [fetchInvoices, lastFetchTime]);
 
   const filteredInvoices = invoices.filter(invoice =>
     invoice.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -205,14 +212,18 @@ export default function InvoiceGallery() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Invoice Gallery</h1>
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => fetchInvoices()}
-              disabled={loading}
-              className="flex items-center px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
+                    <button
+                      onClick={() => {
+                        console.log('Manual refresh triggered');
+                        setLastFetchTime(0); // Force refresh
+                        fetchInvoices();
+                      }}
+                      disabled={loading}
+                      className="flex items-center px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </button>
             <div className="text-sm text-gray-600">
               Total Invoices: {invoices.length}
             </div>

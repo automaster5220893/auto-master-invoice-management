@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auto-master-v1';
+const CACHE_NAME = 'auto-master-v2';
 const urlsToCache = [
   '/',
   '/dashboard',
@@ -30,16 +30,38 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Skip caching for API calls - always fetch fresh data
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request).catch(() => {
+        // If API call fails, return a generic error response
+        return new Response(
+          JSON.stringify({ error: 'Network error' }),
+          { 
+            status: 503, 
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      })
+    );
+    return;
+  }
+  
+  // For non-API requests, use cache-first strategy
   event.respondWith(
-    caches.match(event.request)
+    caches.match(request)
       .then((response) => {
-        // Return cached version or fetch from network
+        // Return cached version if available
         if (response) {
           return response;
         }
         
         // Clone the request because it's a stream
-        const fetchRequest = event.request.clone();
+        const fetchRequest = request.clone();
         
         return fetch(fetchRequest).then((response) => {
           // Check if we received a valid response
@@ -47,19 +69,22 @@ self.addEventListener('fetch', (event) => {
             return response;
           }
           
-          // Clone the response because it's a stream
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+          // Only cache GET requests for static assets
+          if (request.method === 'GET' && !url.pathname.startsWith('/api/')) {
+            // Clone the response because it's a stream
+            const responseToCache = response.clone();
+            
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(request, responseToCache);
+              });
+          }
           
           return response;
         }).catch(() => {
-          // If both cache and network fail, show offline page
-          if (event.request.destination === 'document') {
-            return caches.match('/');
+          // If both cache and network fail, show offline page for navigation requests
+          if (request.destination === 'document') {
+            return caches.match('/offline.html') || caches.match('/');
           }
         });
       })

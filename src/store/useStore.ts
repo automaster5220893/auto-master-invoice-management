@@ -220,6 +220,17 @@ export const useStore = create<AppState>()((set, get) => ({
         invoices: [invoice, ...state.invoices]
       }));
       
+      // Clear any cached API responses to ensure fresh data
+      if ('caches' in window) {
+        caches.keys().then(cacheNames => {
+          cacheNames.forEach(cacheName => {
+            caches.open(cacheName).then(cache => {
+              cache.delete('/api/invoices');
+            });
+          });
+        });
+      }
+      
       return true;
     } catch (error) {
       console.error('Add invoice error:', error);
